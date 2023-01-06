@@ -10,7 +10,7 @@ class Transaction {
   }
 
   calcHash() {
-    return SHA256(this.fromAddress, this.toAddress, this.amount).toString();
+    return SHA256(this.fromAddress + this.toAddress + this.amount).toString();
   }
 
   signTransaction(signingKey) {
@@ -60,7 +60,21 @@ class Block {
       this.nonce++;
       this.hash = this.calcHash();
     }
-    console.log("Block mined: " + this.hash);
+    for (const trans of this.transactions) {
+      let from = trans.fromAddress + "";
+      let to = trans.toAddress + "";
+      let amount = trans.amount + "";
+      console.log(
+        "    Time: " + this.timestamp,
+        "    From: " + from.slice(0, 10),
+        "    To: " + to.slice(0, 10),
+        "    Amount: " + amount.slice(0, 10)
+      );
+    }
+    let hash = this.hash + "";
+    let pre = this.previosHash + "";
+    let nonce = this.nonce + "";
+    console.log("Block: " + hash.slice(0, 10), "\nPrevios: " + pre.slice(0, 10), '\nNonce: ' + nonce.slice(0,10));
   }
 
   hasValidTransactions() {
@@ -121,6 +135,7 @@ class BlockChain {
     }
 
     this.pendingTransactions.push(transaction);
+    this.miningReward = this.calcPercent();
   }
 
   getBalanceOfAddress(address) {
@@ -159,8 +174,16 @@ class BlockChain {
       return true;
     }
   }
+
+  calcPercent() {
+    let result = 0;
+    for (const trans of this.pendingTransactions) {
+      result = result + trans.amount * 0.0000001;
+    }
+    return result;
+  }
 }
 
-module.exports.Block = Block
+module.exports.Block = Block;
 module.exports.BlockChain = BlockChain;
 module.exports.Transaction = Transaction;
